@@ -54,23 +54,47 @@ def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
     引数：なし
     戻り値：異なる大きさの爆弾のリスト・加速度リスト
     """
-    bb_accs = [i for i in range(1,11)]
+    bb_accs = [i for i in range(1,11)] #加速度リストの作成
     bb_imgs = []
     for r in range(1,11):
         bb_img = pg.Surface((20*r, 20*r))
         pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r)
         bb_img.set_colorkey((0, 0, 0))
-        bb_imgs.append(bb_img)
+        bb_imgs.append(bb_img) #爆弾のリストの作成
     return bb_imgs, bb_accs
 
 
+def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
+    """
+    引数：移動量のタプル
+    戻り値：画像Surface
+    移動量の合計値タプルに合わせた向きの画像を返す
+    """
+    kk_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
+    SURFACE={
+    (0,-5): pg.transform.rotozoom(kk_img, 90, 0.9),
+    (-5,-5): pg.transform.rotozoom(kk_img, 45, 0.9),
+    (-5,0): pg.transform.rotozoom(kk_img, 0, 0.9),
+    (-5,+5): pg.transform.rotozoom(kk_img, -45, 0.9),
+    (0,+5): pg.transform.rotozoom(kk_img, -90, 0.9),
+    (+5,+5): pg.transform.rotozoom(kk_img, -45, 0.9),
+    (+5,0): pg.transform.rotozoom(kk_img, 0, 0.9),
+    (+5,-5): pg.transform.rotozoom(kk_img, 45, 0.9),
+    }
+    if sum_mv[0] >= 0:
+        kk_img = pg.transform.flip(kk_img, True, False)
+    for key, pg1 in SURFACE.items():
+        if sum_mv[0] == key[0] and sum_mv[1] == key[1]:
+            Surface = pg1
+            return Surface
 
 
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
-    bg_img = pg.image.load("fig/pg_bg.jpg")    
-    kk_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
+    bg_img = pg.image.load("fig/pg_bg.jpg")
+    kk_img = get_kk_img((0,0))
+    kk_img = get_kk_img(tuple(sum_mv))
     kk_rct = kk_img.get_rect()
     kk_rct.center = 300, 200
     bb_img = pg.Surface((20, 20))
@@ -89,7 +113,7 @@ def main():
         if kk_rct.colliderect(bb_rct): #衝突しているか判定
             gameover(screen)
             return
-        screen.blit(bg_img, [0, 0]) 
+        screen.blit(bg_img, [0, 0])
 
         key_lst = pg.key.get_pressed()
         sum_mv = [0, 0]
@@ -120,8 +144,8 @@ def main():
         screen.blit(bb_img, bb_rct)
         pg.display.update()
         bb_imgs, bb_accs = init_bb_imgs()
-        avx = vx*bb_accs[min(tmr//500, 9)]
-        bb_img = bb_imgs[min(tmr//500, 9)]
+        avx = vx*bb_accs[min(tmr//500, 9)] #加速度の変更
+        bb_img = bb_imgs[min(tmr//500, 9)] #爆弾の大きさ変更
         tmr += 1
         clock.tick(50)
 
