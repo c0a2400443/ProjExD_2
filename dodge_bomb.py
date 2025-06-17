@@ -71,22 +71,23 @@ def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
     移動量の合計値タプルに合わせた向きの画像を返す
     """
     kk_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
+    if sum_mv[0] >= 0:
+        kk_img = pg.transform.flip(kk_img, True, False) #こうかとんの絵を反転させる
     SURFACE={
+    (0,0): pg.transform.rotozoom(kk_img, 0, 0.9),
     (0,-5): pg.transform.rotozoom(kk_img, 90, 0.9),
-    (-5,-5): pg.transform.rotozoom(kk_img, 45, 0.9),
+    (-5,-5): pg.transform.rotozoom(kk_img, -45, 0.9),
     (-5,0): pg.transform.rotozoom(kk_img, 0, 0.9),
-    (-5,+5): pg.transform.rotozoom(kk_img, -45, 0.9),
+    (-5,+5): pg.transform.rotozoom(kk_img, 45, 0.9),
     (0,+5): pg.transform.rotozoom(kk_img, -90, 0.9),
     (+5,+5): pg.transform.rotozoom(kk_img, -45, 0.9),
     (+5,0): pg.transform.rotozoom(kk_img, 0, 0.9),
     (+5,-5): pg.transform.rotozoom(kk_img, 45, 0.9),
     }
-    if sum_mv[0] >= 0:
-        kk_img = pg.transform.flip(kk_img, True, False)
     for key, pg1 in SURFACE.items():
         if sum_mv[0] == key[0] and sum_mv[1] == key[1]:
             Surface = pg1
-            return Surface
+            return Surface #戻り値を返す
 
 
 def main():
@@ -94,7 +95,6 @@ def main():
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     bg_img = pg.image.load("fig/pg_bg.jpg")
     kk_img = get_kk_img((0,0))
-    kk_img = get_kk_img(tuple(sum_mv))
     kk_rct = kk_img.get_rect()
     kk_rct.center = 300, 200
     bb_img = pg.Surface((20, 20))
@@ -140,6 +140,8 @@ def main():
             vx *= -1
         if not tate: #縦方向の判定
             vy *= -1
+        
+        kk_img = get_kk_img(tuple(sum_mv))
         screen.blit(kk_img, kk_rct)
         screen.blit(bb_img, bb_rct)
         pg.display.update()
