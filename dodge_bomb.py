@@ -30,7 +30,12 @@ def check_bound(rct: pg.rect) -> tuple[bool, bool]:
 
 
 def gameover(screen: pg.Surface) -> None: #ゲームオーバー時に呼び出す関数
-    go_img = pg.Surface((1100, 650))
+    """
+    引数：Screen
+    戻り値：なし
+    ゲームオーバー画面を表示
+    """
+    go_img = pg.Surface((WIDTH, HEIGHT))
     pg.draw.rect(go_img, (0, 0, 0), pg.Rect(0, 0, 1100, 650)) #背景を作成
     go_img.set_alpha(150)
     kt_img2 = pg.image.load("fig/8.png") #こうかとんの画像を作成
@@ -44,6 +49,23 @@ def gameover(screen: pg.Surface) -> None: #ゲームオーバー時に呼び出�
     time.sleep(5)
 
 
+def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
+    """
+    引数：なし
+    戻り値：異なる大きさの爆弾のリスト・加速度リスト
+    """
+    bb_accs = [i for i in range(1,11)]
+    bb_imgs = []
+    for r in range(1,11):
+        bb_img = pg.Surface((20*r, 20*r))
+        pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r)
+        bb_img.set_colorkey((0, 0, 0))
+        bb_imgs.append(bb_img)
+    return bb_imgs, bb_accs
+
+
+
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -51,13 +73,13 @@ def main():
     kk_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
     kk_rct = kk_img.get_rect()
     kk_rct.center = 300, 200
-    bb_img = pg.Surface((20,20))
-    pg.draw.circle(bb_img, (255,0,0), (10,10), 10)
+    bb_img = pg.Surface((20, 20))
+    pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10)
     bb_img.set_colorkey((0, 0, 0))
     bb_rct = bb_img.get_rect()
     bb_rct.centerx=random.randint(0,WIDTH)
     bb_rct.centery=random.randint(0,HEIGHT)
-    vx, vy= +5, +5
+    vx, vy, avx = +5, +5, +5
     clock = pg.time.Clock()
     tmr = 0
     while True:
@@ -88,7 +110,7 @@ def main():
         kk_rct.move_ip(sum_mv)
         if check_bound(kk_rct) != (True, True):
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1]) #移動をなかったことに
-        bb_rct.move_ip(vx, vy)
+        bb_rct.move_ip(avx, vy)
         yoko, tate = check_bound(bb_rct)
         if not yoko: #横方向の判定
             vx *= -1
@@ -97,6 +119,9 @@ def main():
         screen.blit(kk_img, kk_rct)
         screen.blit(bb_img, bb_rct)
         pg.display.update()
+        bb_imgs, bb_accs = init_bb_imgs()
+        avx = vx*bb_accs[min(tmr//500, 9)]
+        bb_img = bb_imgs[min(tmr//500, 9)]
         tmr += 1
         clock.tick(50)
 
